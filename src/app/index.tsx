@@ -1,98 +1,322 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  StatusBar,
+  Modal,
+  Alert,
+} from "react-native";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+const profileImage = require("../../assets/images/profile.jpg");
+
+export default function ProfileScreen() {
+  const [name, setName] = useState("Hiranya Bandara");
+  const [email, setEmail] = useState("hiranyabandara05@gmail.com");
+  const [points, setPoints] = useState("0");
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [newName, setNewName] = useState(name);
+  const [newEmail, setNewEmail] = useState(email);
+
+  const editProfile = () => {
+    setNewName(name);
+    setNewEmail(email);
+    setModalVisible(true);
+  };
+
+  const saveProfile = () => {
+    if (!newName.trim() || !newEmail.trim()) {
+      Alert.alert("Error", "Please enter your name and email.");
+      return;
+    }
+
+    setName(newName.trim());
+    setEmail(newEmail.trim());
+    setModalVisible(false);
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#172554" />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Profile</Text>
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Profile photo */}
+        <View style={styles.profileSection}>
+          <View style={styles.imageBorder}>
+            <Image
+              source={profileImage}
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
+          </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.course}>Computer Science Student</Text>
+        </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        {/* Profile details */}
+        <View style={styles.detailsCard}>
+          <Text style={styles.label}>NAME</Text>
+          <Text style={styles.value}>{name}</Text>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.label}>EMAIL</Text>
+          <Text style={styles.value}>{email}</Text>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.label}>POINTS</Text>
+          <View style={styles.pointsRow}>
+            <Text style={styles.star}>★</Text>
+            <Text style={styles.points}>{points}</Text>
+          </View>
+        </View>
+
+        {/* Edit button */}
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={editProfile}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editButtonText}>Edit Profile</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.footer}>My Profile • Version 1.0</Text>
+      </ScrollView>
+
+      {/* Edit profile popup */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <Text style={styles.modalSubtitle}>
+              Update your personal details
+            </Text>
+
+            <Text style={styles.inputLabel}>Full Name</Text>
+            <TextInput
+              style={styles.input}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter your name"
+              placeholderTextColor="#9CA3AF"
+            />
+
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <TextInput
+              style={styles.input}
+              value={newEmail}
+              onChangeText={setNewEmail}
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#9CA3AF"
+            />
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={saveProfile}
+            >
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: "#F5F6FA",
   },
-  safeArea: {
+  header: {
+    height: 58,
+    backgroundColor: "#172554",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 19,
+    fontWeight: "bold",
+  },
+  content: {
+    width: "100%",
+    maxWidth: 500,
+    alignSelf: "center",
+    paddingHorizontal: 22,
+    paddingBottom: 30,
+  },
+  profileSection: {
+    alignItems: "center",
+    paddingTop: 30,
+    paddingBottom: 25,
+  },
+  imageBorder: {
+    width: 125,
+    height: 125,
+    borderRadius: 63,
+    backgroundColor: "#FFFFFF",
+    padding: 5,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 60,
+  },
+  name: {
+    fontSize: 23,
+    fontWeight: "bold",
+    color: "#172554",
+    marginTop: 16,
+    textAlign: "center",
+  },
+  course: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 6,
+  },
+  detailsCard: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E9ECF2",
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#6B7280",
+    letterSpacing: 1,
+    marginBottom: 7,
+  },
+  value: {
+    fontSize: 15,
+    color: "#172033",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 18,
+  },
+  pointsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  star: {
+    fontSize: 21,
+    color: "#172554",
+  },
+  points: {
+    fontSize: 16,
+    color: "#172033",
+  },
+  editButton: {
+    backgroundColor: "#2449A5",
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 22,
+  },
+  editButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  footer: {
+    textAlign: "center",
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 25,
+  },
+  modalBackground: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    padding: 22,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  modalCard: {
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 22,
   },
-  title: {
-    textAlign: 'center',
+  modalTitle: {
+    fontSize: 23,
+    fontWeight: "bold",
+    color: "#172554",
   },
-  code: {
-    textTransform: 'uppercase',
+  modalSubtitle: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 6,
+    marginBottom: 22,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 7,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 48,
+    fontSize: 14,
+    color: "#172033",
+    marginBottom: 17,
+  },
+  saveButton: {
+    backgroundColor: "#2449A5",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 5,
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    alignItems: "center",
+    paddingVertical: 13,
+  },
+  cancelText: {
+    color: "#6B7280",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
